@@ -1,5 +1,5 @@
 {
-    'name': 'Sales Dash',
+    'name': 'Sales Portal Dashboard',
     'version': '1.0',
     'summary': 'Sales Dash',
     'description': 'This module provides the base functionalities for Sales Dashboard in Odoo.',
