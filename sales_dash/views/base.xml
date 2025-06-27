@@ -1,216 +1,377 @@
-<template id="sales_portal_dashboard" name="Sales Portal Dashboard">
-  <t t-set="title">Sales Dashboard</t>
+<odoo>
+    <template id="sales_portal_dashboard" name="Sales Portal Dashboard">
+        <t t-set="title">Sales Dashboard</t>
 
-  <!-- Tailwind + Chart.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
+        <!-- Tailwind + Chart.js -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@latest/dist/chart.umd.min.js"></script>
+        <script>
+            tailwind.config = {
+            darkMode: 'class',
+            theme: {
+            extend: {
+            colors: {
             primary: '#1d4ed8',
             secondary: '#facc15',
             success: '#16a34a',
             danger: '#dc2626',
             neutral: '#f3f4f6'
-          },
-          fontFamily: {
+            },
+            fontFamily: {
             sans: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
+            }
+            }
+            }
+            }
+        </script>
 
-  <div class="bg-neutral min-h-screen p-6">
-    <div class="max-w-7xl mx-auto">
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-10">
-        <div class="text-left">
-          <h1 class="text-4xl font-extrabold text-gray-900">📊 Sales Insights</h1>
-          <p class="text-gray-500 mt-2">Real-time metrics and performance</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <img t-att-src="user_image" alt="User" class="w-10 h-10 rounded-full border"/>
-          <span class="font-medium text-gray-700"><t t-esc="user_name"/></span>
-        </div>
-      </div>
+        <!-- Background with Circles -->
+        <div class="relative min-h-screen p-6 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
 
-      <!-- Filters -->
-      <form method="get" class="mb-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-        <select name="state" class="p-2 border rounded w-full">
-          <option value="">All States</option>
-          <t t-foreach="states" t-as="s">
-            <option t-att-value="s[0]" t-att-selected="s[0] == selected_state">
-              <t t-esc="s[1]"/>
-            </option>
-          </t>
-        </select>
-        <select name="user_id" class="p-2 border rounded w-full">
-          <option value="">All Users</option>
-          <t t-foreach="users" t-as="u">
-            <option t-att-value="u.id" t-att-selected="u.id == selected_user">
-              <t t-esc="u.name"/>
-            </option>
-          </t>
-        </select>
-        <select name="partner_id" class="p-2 border rounded w-full">
-          <option value="">All Customers</option>
-          <t t-foreach="partners" t-as="p">
-            <option t-att-value="p.id" t-att-selected="p.id == selected_partner">
-              <t t-esc="p.name"/>
-            </option>
-          </t>
-        </select>
-        <input type="date" name="start_date" t-att-value="start_date" class="p-2 border rounded w-full" placeholder="Start Date"/>
-        <input type="date" name="end_date" t-att-value="end_date" class="p-2 border rounded w-full" placeholder="End Date"/>
-        <button type="submit" class="bg-primary text-white px-4 py-2 rounded w-full">Filter</button>
-      </form>
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex items-center gap-4">
+                    <a href="/web" class="block">
+                        <img t-att-src="company_logo" alt="Company Logo" class="h-12 w-auto"/>
+                    </a>
+                </div>
+                <div class="text-center">
+                    <h1 class="text-4xl font-extrabold text-gray-900 dark:text-gray-100">📊 Sales Insights</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mt-2">Real-time metrics and performance</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <img t-att-src="user_image" alt="User" class="w-10 h-10 rounded-full border"/>
+                    <span class="font-medium text-gray-700 dark:text-gray-300">
+                        <t t-esc="user_name"/>
+                    </span>
+                </div>
+            </div>
 
-      <!-- KPI Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-        <div class="bg-white rounded-2xl p-6 shadow hover:shadow-md transition">
-          <p class="text-sm text-gray-400">Total Sales</p>
-          <p class="text-3xl font-semibold text-success mt-1">
-            <t t-esc="total_sales"/>
-          </p>
-        </div>
-        <div class="bg-white rounded-2xl p-6 shadow hover:shadow-md transition">
-          <p class="text-sm text-gray-400">Total Orders</p>
-          <p class="text-3xl font-semibold text-primary mt-1">
-            <t t-esc="total_orders"/>
-          </p>
-        </div>
-        <div class="bg-white rounded-2xl p-6 shadow hover:shadow-md transition">
-          <p class="text-sm text-gray-400">Customers</p>
-          <p class="text-3xl font-semibold text-secondary mt-1">
-            <t t-esc="total_customers"/>
-          </p>
-        </div>
-        <div class="bg-white rounded-2xl p-6 shadow hover:shadow-md transition">
-          <p class="text-sm text-gray-400">Top Salesperson</p>
-          <p class="text-3xl font-semibold text-danger mt-1">
-            <t t-esc="top_salesperson"/>
-          </p>
-        </div>
-      </div>
 
-      <!-- Charts Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        <div class="bg-white p-5 rounded-2xl shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Orders by State</h2>
-            <select onchange="renderSingleChart('stateChart', stateData, this.value)" class="p-1 border rounded">
-              <option value="bar">Bar</option>
-              <option value="pie">Pie</option>
-              <option value="doughnut">Doughnut</option>
-            </select>
-          </div>
-          <canvas id="stateChart"></canvas>
-        </div>
-        <div class="bg-white p-5 rounded-2xl shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Sales Total per User</h2>
-            <select onchange="renderSingleChart('userChart', userData, this.value)" class="p-1 border rounded">
-              <option value="bar">Bar</option>
-              <option value="pie">Pie</option>
-              <option value="doughnut">Doughnut</option>
-            </select>
-          </div>
-          <canvas id="userChart"></canvas>
-        </div>
-        <div class="bg-white p-5 rounded-2xl shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Monthly Sales Trend</h2>
-            <select onchange="renderSingleChart('monthlyChart', monthlyData, this.value, 'Monthly Sales')" class="p-1 border rounded">
-              <option value="line">Line</option>
-              <option value="bar">Bar</option>
-            </select>
-          </div>
-          <canvas id="monthlyChart"></canvas>
-        </div>
-        <div class="bg-white p-5 rounded-2xl shadow">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">Top 5 Customers</h2>
-            <select onchange="renderSingleChart('topCustomersChart', topCustomers, this.value)" class="p-1 border rounded">
-              <option value="doughnut">Doughnut</option>
-              <option value="pie">Pie</option>
-              <option value="bar">Bar</option>
-            </select>
-          </div>
-          <canvas id="topCustomersChart"></canvas>
-        </div>
-      </div>
+            <!-- Circles -->
 
-      <!-- Orders Table -->
-      <div class="bg-white rounded-2xl p-6 shadow">
-        <input type="text" placeholder="Search orders..." class="mb-4 p-2 border rounded w-full" oninput="searchTable(this.value)"/>
-        <table class="min-w-full table-fixed">
-          <thead>
-            <tr class="bg-gray-100 text-sm text-gray-700">
-              <th class="p-2 text-left">Order</th>
-              <th class="p-2 text-left">Customer</th>
-              <th class="p-2 text-left">Salesperson</th>
-              <th class="p-2 text-left">Total</th>
-              <th class="p-2 text-left">Status</th>
-            </tr>
-          </thead>
-          <tbody id="orderTable">
-            <t t-foreach="orders" t-as="order">
-              <tr class="hover:bg-gray-50">
-                <td class="p-2"><t t-esc="order.name"/></td>
-                <td class="p-2"><t t-esc="order.partner_id.name"/></td>
-                <td class="p-2"><t t-esc="order.user_id.name"/></td>
-                <td class="p-2"><t t-esc="order.amount_total"/></td>
-                <td class="p-2"><t t-esc="order.state"/></td>
-              </tr>
-            </t>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+            <div aria-hidden="true" class="absolute inset-0">
+                <div class="absolute w-96 h-96 bg-blue-400/20 rounded-full top-10 left-10 blur-3xl"></div>
+                <div class="absolute w-72 h-72 bg-emerald-400/20 rounded-full bottom-20 right-20 blur-2xl"></div>
+                <div class="absolute w-64 h-64 bg-indigo-400/20 rounded-full top-1/3 right-1/3 blur-2xl"></div>
+            </div>
+            <!-- Container -->
+            <div class="max-w-7xl mx-auto relative z-10">
 
-  <!-- Chart Logic -->
-  <script>
-    const stateData = <t t-raw="json_state_data"/>;
-    const userData = <t t-raw="json_user_sales"/>;
-    const monthlyData = <t t-raw="json_monthly_sales"/>;
-    const topCustomers = <t t-raw="json_top_customers"/>;
 
-    let charts = {};
+                <!-- Filters -->
+                <form method="get"
+                      class="mb-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-white/30 dark:border-gray-700 p-4 rounded-2xl shadow">
 
-    function renderSingleChart(canvasId, dataObj, type, label='') {
-      if (charts[canvasId]) charts[canvasId].destroy();
-      charts[canvasId] = new Chart(document.getElementById(canvasId), {
-        type,
-        data: {
-          labels: Object.keys(dataObj),
-          datasets: [{
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-700 dark:text-gray-300 mb-1">State</label>
+                        <select name="state"
+                                class="p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:ring focus:ring-primary/30">
+                            <option value="">All States</option>
+                            <t t-foreach="states" t-as="s">
+                                <option t-att-value="s[0]" t-att-selected="s[0] == selected_state">
+                                    <t t-esc="s[1]"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-700 dark:text-gray-300 mb-1">Salesperson</label>
+                        <select name="user_id"
+                                class="p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:ring focus:ring-primary/30">
+                            <option value="">All Users</option>
+                            <t t-foreach="users" t-as="u">
+                                <option t-att-value="u.id" t-att-selected="u.id == selected_user">
+                                    <t t-esc="u.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-700 dark:text-gray-300 mb-1">Customer</label>
+                        <select name="partner_id"
+                                class="p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:ring focus:ring-primary/30">
+                            <option value="">All Customers</option>
+                            <t t-foreach="partners" t-as="p">
+                                <option t-att-value="p.id" t-att-selected="p.id == selected_partner">
+                                    <t t-esc="p.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                        <input type="date" name="start_date" t-att-value="start_date"
+                               class="p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:ring focus:ring-primary/30"/>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label class="text-sm text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                        <input type="date" name="end_date" t-att-value="end_date"
+                               class="p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 focus:ring focus:ring-primary/30"/>
+                    </div>
+
+                    <div class="flex flex-col justify-end">
+                        <button type="submit"
+                                class="bg-primary text-white px-4 py-2 rounded w-full hover:bg-primary/90 transition">
+                            Filter
+                        </button>
+                    </div>
+                </form>
+
+
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                    <!-- Total Sales -->
+                    <div class="relative p-5 rounded-xl bg-white dark:bg-gray-800 shadow hover:shadow-lg transition border-l-4 border-green-500">
+                        <i class="fa fa-dollar-sign absolute top-3 right-3 text-green-200 dark:text-green-700 text-3xl opacity-20"></i>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Sales</p>
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mt-1">
+                            <t t-esc="total_sales"/>
+                            <span class="text-lg text-gray-500 dark:text-gray-400">
+                                <t t-esc="currency_symbol"/>
+                            </span>
+                        </p>
+                    </div>
+
+                    <!-- Total Orders -->
+                    <div class="relative p-5 rounded-xl bg-white dark:bg-gray-800 shadow hover:shadow-lg transition border-l-4 border-blue-500">
+                        <i class="fa fa-shopping-cart absolute top-3 right-3 text-blue-200 dark:text-blue-700 text-3xl opacity-20"></i>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Total Orders</p>
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mt-1">
+                            <t t-esc="total_orders"/>
+                        </p>
+                    </div>
+
+                    <!-- Customers -->
+                    <div class="relative p-5 rounded-xl bg-white dark:bg-gray-800 shadow hover:shadow-lg transition border-l-4 border-yellow-500">
+                        <i class="fa fa-users absolute top-3 right-3 text-yellow-200 dark:text-yellow-700 text-3xl opacity-20"></i>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Customers</p>
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mt-1">
+                            <t t-esc="total_customers"/>
+                        </p>
+                    </div>
+
+                    <!-- Top Salesperson -->
+                    <div class="relative p-5 rounded-xl bg-white dark:bg-gray-800 shadow hover:shadow-lg transition border-l-4 border-purple-500">
+                        <i class="fa fa-star absolute top-3 right-3 text-purple-200 dark:text-purple-700 text-3xl opacity-20"></i>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Top Salesperson</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1 truncate">
+                            <t t-esc="top_salesperson"/>
+                        </p>
+                    </div>
+                </div>
+
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                    <div class="bg-white/30 backdrop-blur-lg border border-white/40 p-5 rounded-2xl shadow dark:bg-gray-800/50 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Orders by State</h2>
+                            <select onchange="renderSingleChart('stateChart', stateData, this.value)"
+                                    class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                <option value="bar">Bar</option>
+                                <option value="pie">Pie</option>
+                                <option value="doughnut">Doughnut</option>
+                            </select>
+                        </div>
+                        <canvas id="stateChart"></canvas>
+                    </div>
+                    <div class="bg-white/30 backdrop-blur-lg border border-white/40 p-5 rounded-2xl shadow dark:bg-gray-800/50 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Sales Total per User</h2>
+                            <select onchange="renderSingleChart('userChart', userData, this.value)"
+                                    class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                <option value="bar">Bar</option>
+                                <option value="pie">Pie</option>
+                                <option value="doughnut">Doughnut</option>
+                            </select>
+                        </div>
+                        <canvas id="userChart"></canvas>
+                    </div>
+                    <div class="bg-white/30 backdrop-blur-lg border border-white/40 p-5 rounded-2xl shadow dark:bg-gray-800/50 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Monthly Sales Trend</h2>
+                            <select onchange="renderSingleChart('monthlyChart', monthlyData, this.value, 'Monthly Sales')"
+                                    class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                <option value="line">Line</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                    <div class="bg-white/30 backdrop-blur-lg border border-white/40 p-5 rounded-2xl shadow dark:bg-gray-800/50 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-200">Top 5 Customers</h2>
+                            <select onchange="renderSingleChart('topCustomersChart', topCustomers, this.value)"
+                                    class="p-1 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                <option value="doughnut">Doughnut</option>
+                                <option value="pie">Pie</option>
+                                <option value="bar">Bar</option>
+                            </select>
+                        </div>
+                        <canvas id="topCustomersChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Products most soled cards -->
+
+
+                <div class="bg-white/30 backdrop-blur-lg border border-white/40 rounded-2xl p-6 shadow dark:bg-gray-800/50 dark:border-gray-700 mb-12">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6">🏆 Top 20 Best-Selling
+                        Products
+                    </h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        <t t-foreach="top_products" t-as="prod">
+                            <div class="bg-white/50 dark:bg-gray-700/50 backdrop-blur-lg border border-white/30 dark:border-gray-600 rounded-xl p-3 shadow hover:shadow-lg transition transform hover:-translate-y-1">
+                                <div class="w-full h-32 mb-3 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800">
+                                    <img t-att-src="prod['image']" alt="Product" class="w-full h-full object-cover"/>
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                        <t t-esc="prod['name']"/>
+                                    </p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-300">Qty Sold:
+                                        <t t-esc="prod['qty']"/>
+                                    </p>
+                                    <p class="text-primary font-bold text-lg mt-1">
+                                        <t t-esc="prod['amount']"/>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            <t t-esc="currency_symbol"/>
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+
+                <!-- Orders Table -->
+
+                <div class="bg-white/30 backdrop-blur-lg border border-white/40 rounded-2xl p-6 shadow dark:bg-gray-800/50 dark:border-gray-700">
+                    <input type="text" placeholder="Search orders..."
+                           class="mb-4 p-2 border rounded w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                           oninput="searchTable(this.value)"/>
+                    <div class="max-h-96 overflow-y-auto rounded">
+                        <table class="min-w-full table-fixed">
+                            <thead>
+                                <tr class="bg-gray-100/50 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                    <th class="p-2 text-left cursor-pointer" onclick="sortTable(this, 0)">Order</th>
+                                    <th class="p-2 text-left cursor-pointer" onclick="sortTable(this, 1)">Customer</th>
+                                    <th class="p-2 text-left cursor-pointer" onclick="sortTable(this, 2)">Salesperson
+                                    </th>
+                                    <th class="p-2 text-left cursor-pointer" onclick="sortTable(this, 3, true)">Total
+                                    </th>
+                                    <th class="p-2 text-left cursor-pointer" onclick="sortTable(this, 4)">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderTable">
+                                <t t-foreach="orders" t-as="order">
+                                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/70">
+                                        <td class="p-2">
+                                            <t t-esc="order.name"/>
+                                        </td>
+                                        <td class="p-2 flex items-center gap-2">
+                                            <img t-att-src="'/web/image/res.partner/' + str(order.partner_id.id) + '/image_128'"
+                                                 alt="Customer" class="w-8 h-8 rounded-full border"/>
+                                            <span>
+                                                <t t-esc="order.partner_id.name"/>
+                                            </span>
+                                        </td>
+                                        <td class="p-2">
+                                            <t t-esc="order.user_id.name"/>
+                                        </td>
+                                        <td class="p-2">
+                                            <t t-esc="order.amount_total"/>
+                                        </td>
+                                        <td class="p-2">
+                                            <t t-esc="order.state"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- Chart Logic -->
+        <script>
+            const stateData =<t t-raw="json_state_data"/>;
+            const userData =<t t-raw="json_user_sales"/>;
+            const monthlyData =<t t-raw="json_monthly_sales"/>;
+            const topCustomers =<t t-raw="json_top_customers"/>;
+
+            let charts = {};
+
+            function renderSingleChart(canvasId, dataObj, type, label='') {
+            if (charts[canvasId]) charts[canvasId].destroy();
+            charts[canvasId] = new Chart(document.getElementById(canvasId), {
+            type,
+            data: {
+            labels: Object.keys(dataObj),
+            datasets: [{
             label: label || undefined,
             data: Object.values(dataObj),
             backgroundColor: ['#60a5fa', '#f87171', '#34d399', '#fbbf24', '#c084fc', '#4ade80', '#a855f7'],
             borderRadius: 8,
             borderColor: '#3b82f6'
-          }]
-        },
-        options: { responsive: true, scales: type === 'bar' || type === 'line' ? { y: { beginAtZero: true } } : {} }
-      });
-    }
+            }]
+            },
+            options: {
+            responsive: true,
+            scales: type === 'bar' || type === 'line' ? { y: { beginAtZero: true } } : {}
+            }
+            });
+            }
 
-    document.addEventListener('DOMContentLoaded', function () {
-      renderSingleChart('stateChart', stateData, 'bar');
-      renderSingleChart('userChart', userData, 'bar');
-      renderSingleChart('monthlyChart', monthlyData, 'line', 'Monthly Sales');
-      renderSingleChart('topCustomersChart', topCustomers, 'doughnut');
-    });
+            document.addEventListener('DOMContentLoaded', function () {
+            renderSingleChart('stateChart', stateData, 'bar');
+            renderSingleChart('userChart', userData, 'bar');
+            renderSingleChart('monthlyChart', monthlyData, 'line', 'Monthly Sales');
+            renderSingleChart('topCustomersChart', topCustomers, 'doughnut');
+            });
 
-    function searchTable(value) {
-      const rows = document.querySelectorAll("#orderTable tr");
-      rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(value.toLowerCase()) ? '' : 'none';
-      });
-    }
-  </script>
-</template>
+            function searchTable(value) {
+            const rows = document.querySelectorAll("#orderTable tr");
+            rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value.toLowerCase()) ? '' : 'none';
+            });
+            }
+
+            function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            }
+            function sortTable(header, colIndex, numeric = false) {
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const ascending = !header.dataset.sortAsc || header.dataset.sortAsc === 'false';
+
+            rows.sort((a, b) => {
+            const aText = a.children[colIndex].innerText.trim();
+            const bText = b.children[colIndex].innerText.trim();
+            if (numeric) {
+            return ascending ? (parseFloat(aText) - parseFloat(bText)) : (parseFloat(bText) - parseFloat(aText));
+            } else {
+            return ascending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+            }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+
+            // Toggle sort direction
+            table.querySelectorAll('th').forEach(th => th.dataset.sortAsc = '');
+            header.dataset.sortAsc = ascending;
+            }
+
+        </script>
+    </template>
+</odoo>
