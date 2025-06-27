@@ -30,7 +30,7 @@ A custom Odoo 18.0 module that provides a **visual and interactive sales dashboa
 
 ## 📷 Screenshots
 
->  ![image](https://github.com/AbdelrahmanShahrour/vendor-portal/blob/18.0/screencapture-localhost-8069-portal-sales-dashboard-2025-06-26-20_33_22.png)
+>  ![image](https://github.com/AbdelrahmanShahrour/vendor-portal/blob/18.0/screencapture-localhost-8069-portal-sales-dashboard-2025-06-27-23_14_12.png)
 - The dashboard with filters and charts
 - The searchable table
 
