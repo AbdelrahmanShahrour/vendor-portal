@@ -62,6 +62,33 @@ class SalesPortalDashboard(http.Controller):
         top_customers = dict(sorted(customer_sales.items(), key=lambda item: item[1], reverse=True)[:5])
         print(monthly_sales)
 
+        # Top 20 products by quantity
+        product_sales = defaultdict(lambda: {'qty': 0, 'amount': 0.0, 'image_url': ''})
+
+        for order in orders:
+            for line in order.order_line:
+                product = line.product_id
+                if product:
+                    product_sales[product.id]['qty'] += line.product_uom_qty
+                    product_sales[product.id]['amount'] += line.price_subtotal
+                    product_sales[product.id]['image_url'] = f"/web/image/product.product/{product.id}/image_128"
+
+        # Sort and take top 20
+        top_products = sorted(product_sales.items(), key=lambda x: x[1]['qty'], reverse=True)[:20]
+
+        # Convert to a list of dicts for easy template use
+        top_products_list = []
+        for product_id, data in top_products:
+            product = request.env['product.product'].sudo().browse(product_id)
+            top_products_list.append({
+                'name': product.name,
+                'qty': int(data['qty']),
+                'amount': round(data['amount'], 2),
+                'image': data['image_url'],
+            })
+
+        currency_symbol = request.env.company.currency_id.symbol
+
         return request.render('sales_dash.sales_portal_dashboard', {
             'orders': orders,
             'states': request.env['sale.order'].sudo().fields_get(allfields=['state'])['state']['selection'],
@@ -82,4 +109,7 @@ class SalesPortalDashboard(http.Controller):
             'top_salesperson': top_salesperson,
             'user_name': request.env.user.name,
             'user_image': f"/web/image/res.users/{request.env.user.id}/image_128",
+            'company_logo': f"/web/image/res.company/{request.env.company.id}/logo",
+            'top_products': top_products_list,
+            'currency_symbol': currency_symbol,
         })
